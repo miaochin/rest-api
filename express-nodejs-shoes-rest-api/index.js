@@ -73,11 +73,9 @@ app.post('/api/shoes', (req, res) => {
     
     const validation = schema.validate(req.body);
     
-    if (keysNotDefined(req, res)) return;
-
-    if (validation.error) {
-        return res.send(validation.error.details[0].message);
-    } else {
+    if (validation.error) return res.status(400).send(validation.error.details[0].message);
+    
+    else {
         const shoesItem = {
             id: idCount + 1,
             category: req.body.category,
@@ -95,21 +93,29 @@ app.post('/api/shoes', (req, res) => {
 app.put('/api/shoes/:id', (req, res) => {
     const index = shoes.findIndex(s => s.id === parseInt(req.params.id));
     
-    if (keysNotDefined(req, res)) return;
-
     if (index === -1) {
         return res.status(404).send('Item Not Found.')
-    } else {
-        shoesItem = shoes[index]
-        const shoesNewData = {
-            id: shoesItem.id,
-            category: req.body.category || shoesItem.category,
-            color: req.body.color || shoesItem.color,
-            country_of_origin: req.body.country_of_origin || shoesItem.country_of_origin
-        }
-        shoes[index] = shoesNewData;
-        res.status(200).send(shoes[index])
     }
+    
+    const schema = Joi.object({
+        category: Joi.string(),
+        color: Joi.string(),
+        country_of_origin: Joi.string()
+    });
+    
+    const validation = schema.validate(req.body);
+    
+    if (validation.error) return res.status(400).send(validation.error.details[0].message);
+
+    shoesItem = shoes[index]
+    const shoesNewData = {
+        id: shoesItem.id,
+        category: req.body.category || shoesItem.category,
+        color: req.body.color || shoesItem.color,
+        country_of_origin: req.body.country_of_origin || shoesItem.country_of_origin
+    }
+    shoes[index] = shoesNewData;
+    res.status(200).send(shoes[index])   
 })
 
 // Delete A Pair Of Shoes
@@ -135,13 +141,3 @@ app.listen(PORT, (err) => {
         console.log(`Server running on port ${PORT}`);
     }
 })
-
-const keysNotDefined = (req, res) => {
-    const keys = ["category", "color", "country_of_origin"];
-    
-    for (let i in req.body) {
-        if (!(keys.includes(i))) {
-            return res.status(400).send(`"${i}" is not defined.`)
-        }
-    }
-}
