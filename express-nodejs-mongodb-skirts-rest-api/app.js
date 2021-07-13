@@ -42,7 +42,7 @@ app.post('/api/skirts', (req, res) => {
 app.put('/api/skirts/:id', (req, res) => {
     const id = req.params.id
     const skirt = req.body
-    updateSkirt(id, skirt, {}, (err, skirt) => {
+    updateSkirt(id, skirt, { new: true }, (err, skirt) => {
         if (err) throw err
         res.json(skirt)
     })
